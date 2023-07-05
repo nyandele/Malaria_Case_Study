@@ -1,5 +1,4 @@
-
-## List of indicators from the website
+## Retrieving the List of indicators from the GHO website
 library(jsonlite)
 url <- "https://ghoapi.azureedge.net/api/Indicator"
 # Send GET request and retrieve the JSON data
@@ -8,14 +7,14 @@ response <- jsonlite::fromJSON(url)
 indicators <- as.data.frame(response$value)
 
 
-#####################  01. MALARIA SITUATION   ########################
+###################  01. TRENDS IN MALARIA DEATHS  ####################
 #######################################################################
 
-###### 01) a. Malaria deaths by world region
+###### 1.1: Malaria Deaths Worldwide
 mal_deaths_region <- read.csv("Deaths_Estimated_Region.csv")
 str(mal_deaths_region)
 
-#remove uneeded variables
+#remove unneeded variables
 library(dplyr)
 mal_deaths_region <- mal_deaths_region[,-c(1:7, 9, 11:23, 25:34)]
 str(mal_deaths_region)
@@ -93,47 +92,7 @@ a <- a %>% layout(hovermode = "x", hoverdistance = 100)
 a
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###### 01) b. Malaria deaths in SSA --> Top Five Countries
+###### 1.2: Malaria Deaths in the African Region
 
 mal_deaths_africa <- read.csv("Deaths_Estimated_Africa.csv")
 str(mal_deaths_africa)
@@ -186,7 +145,7 @@ ggplot(top_five_filtered, aes(x = period, y = no_of_deaths, fill = reorder(count
         )
 
 
-###### 01) c. Malaria Incidence and Mortality --> Tanzania and Global
+###### 1.3: Malaria Incidence and Mortality in Tanzania
 
 # Incidence #
 #Import data - Global incidence
@@ -271,11 +230,9 @@ ggplot(mal_mortality, aes(x = year, y = mortality, color = location, group = loc
         )
 
 
-###### 01) d. Malaria prevalence in under 5's --> Spatial distribution Tanzania
+###### 1.4: Spatial Distribution of Malaria Prevalence in Children Under 5yrs
 
-## 02) Create a map for malaria prevalence in under 5's
-
-#import prevelence dataframe
+#import prevalence dataframe
 library(readxl)
 prevalence_under5s <- read_excel("prevalence_under5s.xlsx")
 colnames(prevalence_under5s) <- c("region", "prevalence", "category")
@@ -304,10 +261,10 @@ ggplot() +
 
 
 
-######################  02. MALARIA INTERVENTIONS   ######################
+############  02. TRENDS IN COVERAGE OF MALARIA INTERVENTIONS  ###########
 ##########################################################################
 
-# 2.1: Nets, Sprays and Treatment
+# 2.1: Recent Trends in Coverage of Malaria Treatment, Bed Nets and Insecticide Spraying
 
 #Import data
 
@@ -358,9 +315,9 @@ ggplot(interventions, aes(x = Year, y = Coverage, group = variable)) +
         )
 
 
-# 2.2: mRDT and Microscopy diagnosis
+# 2.2: Recent Trends in Malaria Diagnoses by Microscopy and mRDT Tools
 
-#Import datasets for mRDT, Microscopy and modeled estimates
+#Import Datasets for mRDT, Microscopy and Estimated Malaria Cases
 cases_rdt <- read.csv("cases_rdt.csv")
 cases_rdt <- cases_rdt[,c(10, 24)]
 colnames(cases_rdt) <- c("year", "cases_rdt")
@@ -423,10 +380,10 @@ r +
         theme(plot.title = element_text(hjust = 0.5))
 
 
-################  03. INCIDENCE AND MORTALITY FORECASTS   ################
-##########################################################################
+#### 03. TIME SERIES FORECASTING OF MALARIA INCIDENCE AND MORTALITY  ####
+#########################################################################
 
-##### 3.1: Plot Incidence time series
+##### 3.1: Forecasts in malaria incidence
 
 library(forecast)
 
@@ -453,19 +410,19 @@ avg_forecast$mean
 forecast_time_index <- ts(rep(NA, 10), start = end(incidence_ts) + 1, frequency = frequency(incidence_ts))
 
 
-# use two-step process to plot forecast (***did not work in our case!)
+# use two-step process to plot forecast
 plot(incidence_ts)
 lines(avg_forecast$mean, col = "pink")
 
 plot(avg_forecast) #plot the forecast directly
 autoplot(avg_forecast) #you can do the same plot, but with ggplot2
 
-arima_model <- auto.arima(incidence_ts, seasonal = FALSE)
+arima_model <- auto.arima(incidence_ts, seasonal = FALSE) #apply ARIMA forecasting
 arima_forecast <- forecast(arima_model)
 plot(arima_forecast)
 
 
-# 3.1b: Plot Forecast Incidence
+# Plot the Forecasted Incidence
 
 forecast_df1 <- as.data.frame(arima_forecast)
 str(forecast_df1)
@@ -513,9 +470,7 @@ y +
                fill = guide_legend(title = NULL))
 
 
-
-
-##### 3.2: Plot Mortality time series
+##### 3.2: Forecasts in Malaria Mortality
 tz_mortality
 str(tz_mortality)
 
@@ -551,7 +506,7 @@ arima_model_mort <- auto.arima(mortality_ts, seasonal = FALSE)
 arima_forecast_mort <- forecast(arima_model_mort)
 plot(arima_forecast_mort)
 
-# 3.2b: Plot Forecast Mortality
+# Plot Forecast Mortality
 
 forecast_df2 <- as.data.frame(arima_forecast_mort)
 str(forecast_df2)
@@ -597,14 +552,6 @@ z +
                   vjust = 2.1, color = "black", size = 3.5) +
         guides(color = guide_legend(order = 2, title = "", override.aes = list(shape = 20)),
                fill = guide_legend(title = NULL))
-
-
-
-
-
-
-
-
 
 
 
